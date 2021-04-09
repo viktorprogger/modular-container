@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Psr\Container\ContainerInterface;
 
-class ContainerRouter
+class ContainerRouter implements ContainerInterface
 {
     private array $moduleContainers;
 
@@ -26,5 +26,10 @@ class ContainerRouter
         }
 
         throw new NofFoundException();
+    }
+
+    public function has(string $id): bool
+    {
+        // TODO: Implement has() method.
     }
 }
