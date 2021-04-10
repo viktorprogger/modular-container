@@ -3,34 +3,23 @@
 declare(strict_types=1);
 
 
+namespace Viktorprogger\Container;
+
 use Psr\Container\ContainerInterface;
 
 class ModuleContainer implements ContainerInterface
 {
-    private string $namespace;
-    private ContainerInterface $moduleContainer;
-    private ContainerCollection $commonContainers;
-    private ContainerCollection $submoduleContainers;
-    private ContainerCollection $thirdPartyContainers;
-
     public function __construct(
         string $namespace,
-        ContainerInterface $moduleContainer,
-        ContainerCollection $commonContainers,
-        ContainerCollection $submoduleContainers,
-        ContainerCollection $thirdPartyContainers
+        array $definitions,
+        ?ContainerInterface $commonContainer = null
     ) {
-        $this->namespace = $namespace;
-        $this->moduleContainer = $moduleContainer;
-        $this->commonContainers = $commonContainers;
-        $this->submoduleContainers = $submoduleContainers;
-        $this->thirdPartyContainers = $thirdPartyContainers;
     }
 
     /**
      * @inheritDoc
      */
-    public function get(string $id)
+    public function get($id)
     {
         if ($this->moduleContainer->has($id)) {
             return $this->moduleContainer->get($id);
