@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Viktorprogger\Container;
 
+use Exception;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Yiisoft\Factory\Definitions\ArrayDefinition;
@@ -54,7 +55,6 @@ class ModuleContainer implements ContainerInterface
         if ($id === ContainerInterface::class) {
             return $this;
         }
-        $this->building[$id] = true;
 
         if (isset($this->building[$id])) {
             throw new InvalidArgumentException(
@@ -65,13 +65,18 @@ class ModuleContainer implements ContainerInterface
                 )
             );
         }
+        $this->building[$id] = true;
 
         try {
             if (isset($this->definitions[$id])) {
                 $this->resolved[$id] = $this->build($this->definitions[$id]);
-            } elseif (class_exists($id) && strpos($id, $this->namespace) === 0) {
+            } elseif (class_exists($id)) {
                 $container = $this->getSubmoduleContainer($id);
                 if ($container === null) {
+                    if ($this->getNamespaceMatch($id, $this->namespace) < count(explode('\\', $this->namespace))) {
+                        throw new NofFoundException();
+                    }
+
                     $this->resolved[$id] = $this->build($id);
                 } else {
                     $this->resolved[$id] = $container->get($id);
@@ -79,6 +84,10 @@ class ModuleContainer implements ContainerInterface
             }
         } finally {
             unset($this->building[$id]);
+        }
+
+        if (isset($this->resolved[$id])) {
+            return $this->resolved[$id];
         }
 
         throw new NofFoundException();
@@ -98,7 +107,7 @@ class ModuleContainer implements ContainerInterface
     private function getSubmoduleContainer(string $id): ?ModuleContainer
     {
         $namespaceChosen = null;
-        $length = 0;
+        $length = $this->getNamespaceMatch($id, $this->namespace);
 
         foreach ($this->submoduleDefinitions as $namespace => $definitions) {
             $match = $this->getNamespaceMatch($id, $namespace);
@@ -111,8 +120,8 @@ class ModuleContainer implements ContainerInterface
         if ($namespaceChosen !== null) {
             if (!isset($this->submoduleContainers[$namespaceChosen])) {
                 $definitions = $this->submoduleDefinitions[$namespaceChosen];
-                $submodules = $definitions['#submodules'];
-                unset($definitions['#submodules']);
+                $submodules = $definitions[RootContainer::KEY_SUBMODULES] ?? [];
+                unset($definitions[RootContainer::KEY_SUBMODULES]);
 
                 $this->submoduleContainers[$namespaceChosen] = new ModuleContainer(
                     $namespaceChosen,

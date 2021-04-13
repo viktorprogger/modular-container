@@ -12,6 +12,8 @@ class RootContainer
 {
     private const KEY_DEFINITIONS = '#definitions';
     private const KEY_CONTAINER = '#container';
+    private const KEY_SUBMODULE_NAMES = '#submoduleNames';
+    public const KEY_SUBMODULES = '#submodules';
 
     private array $building = [];
 
@@ -67,14 +69,17 @@ class RootContainer
     private function getModuleContainer(string $id): ?ContainerInterface
     {
         $resultBag = null;
+        $resultNamespace = $tempNamespace = [];
         $definitionBag = &$this->definitions;
 
         $namespace = explode('\\', trim($id, '\\'));
         array_pop($namespace); // remove class name
 
         foreach ($namespace as $part) {
-            if (isset($definitionBag[self::KEY_DEFINITIONS])) {
-                $resultBag = &$definitionBag;
+            $tempNamespace[] = $part;
+            if (isset($definitionBag[$part][self::KEY_DEFINITIONS])) {
+                $resultBag = &$definitionBag[$part];
+                $resultNamespace = $tempNamespace;
             }
 
             if (isset($definitionBag[$part])) {
@@ -89,7 +94,18 @@ class RootContainer
         }
 
         if ($resultBag[self::KEY_CONTAINER] === null) {
-            $resultBag[self::KEY_CONTAINER] = new ModuleContainer($resultBag[self::KEY_DEFINITIONS]); //TODO
+            $submodules = $resultBag[self::KEY_DEFINITIONS][self::KEY_SUBMODULE_NAMES] ?? [];
+            unset($resultBag[self::KEY_DEFINITIONS][self::KEY_SUBMODULE_NAMES]);
+
+            $submoduleDefinitions = [];
+            foreach ($submodules as $submodule) {
+                $submoduleDefinitions[$submodule] = $this->buildSubmoduleTree($submodule);
+            }
+            $resultBag[self::KEY_CONTAINER] = new ModuleContainer(
+                implode('\\', $resultNamespace),
+                $resultBag[self::KEY_DEFINITIONS],
+                $submoduleDefinitions
+            );
         }
 
         return $resultBag[self::KEY_CONTAINER];
@@ -174,6 +190,10 @@ class RootContainer
 
     private function buildDefinitions(string $namespace, array $definitions): array
     {
+        if (isset($this->definitionsPlain[$namespace])) {
+            return $this->definitionsPlain[$namespace];
+        }
+
         if (isset($this->building[$namespace])) {
             throw new RuntimeException('Circular module dependency');
         }
@@ -182,27 +202,26 @@ class RootContainer
         $moduleConfig = $definitions[$namespace];
 
         $this->setDefaultDefinitions($namespace, $moduleConfig['definitions'] ?? []);
-        $definitionParts = [$moduleConfig['definitions']];
-        foreach ($moduleConfig['dependencies'] as $dependencyNamespace) {
+        $definitionParts = [$moduleConfig['definitions'] ?? []];
+        foreach ($moduleConfig['dependencies'] ?? [] as $dependencyNamespace) {
             if (!isset($definitions[$dependencyNamespace])) {
                 throw new InvalidArgumentException("Dependency '$dependencyNamespace' of module '$namespace' is not defined");
             }
 
             if (strpos($dependencyNamespace, $namespace) === 0) {
                 // Dependency is a submodule of the current module
-                // We will ask for the submodule container, so don't merge definitions
-            } elseif (strpos($namespace, $dependencyNamespace)) {
+                $definitionParts[0][self::KEY_SUBMODULE_NAMES][] = $dependencyNamespace;
+            } elseif (strpos($namespace, $dependencyNamespace) === 0) {
                 // Dependency is a parent of the current module
-                $parentDefinitions = $this->definitionsPlain[$dependencyNamespace]
-                    ?? $this->buildDefinitions($dependencyNamespace, $definitions);
+                $parentDefinitions = $this->buildDefinitions($dependencyNamespace, $definitions);
 
                 $definitionParts[] = $this->getDependencyDefinitions($dependencyNamespace, $parentDefinitions);
             } else {
                 // 3rd-party dependency
-                $dependencyDefinitions = $this->definitionsPlain[$dependencyNamespace]
-                    ?? $this->buildDefinitions($dependencyNamespace, $definitions);
+                $dependencyDefinitions = $this->buildDefinitions($dependencyNamespace, $definitions);
 
                 $definitionParts[] = $dependencyDefinitions;
+                $definitionParts[0][self::KEY_SUBMODULE_NAMES][] = $dependencyNamespace;
             }
         }
 
@@ -227,5 +246,19 @@ class RootContainer
         }
 
         return $container->get($id);
+    }
+
+    private function buildSubmoduleTree($submodule): array
+    {
+        $definitions = &$this->definitionsPlain[$submodule];
+        if (isset($definitions[self::KEY_SUBMODULE_NAMES])) {
+            foreach ($definitions[self::KEY_SUBMODULE_NAMES] as $subSubmodule) {
+                $definitions[self::KEY_SUBMODULES][$subSubmodule] = $this->buildSubmoduleTree($subSubmodule);
+            }
+
+            unset($definitions[self::KEY_SUBMODULE_NAMES]);
+        }
+
+        return $definitions;
     }
 }
