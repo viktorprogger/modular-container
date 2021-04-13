@@ -8,7 +8,10 @@ use Viktorprogger\Container\Test\Stub\ModuleRoot3\Module3Interface;
 
 class DependencyRedefined
 {
+    public Module3Interface $module3;
+
     public function __construct(Module3Interface $module3)
     {
+        $this->module3 = $module3;
     }
 }

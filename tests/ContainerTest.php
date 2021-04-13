@@ -43,7 +43,11 @@ class ContainerTest extends TestCase
     public function testSuccessful(string $className, ?Closure $assert = null): void
     {
         $container = new RootContainer(require __DIR__ . '/config.php');
+        $object = $container->get($className);
 
-        self::assertInstanceOf($className, $container->get($className));
+        self::assertInstanceOf($className, $object);
+        if ($assert !== null) {
+            $assert($object);
+        }
     }
 }
