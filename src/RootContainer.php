@@ -153,7 +153,7 @@ class RootContainer
     {
         foreach ($definitions as $id => $definition) {
             if (isset($this->definitionsDefault[$id])) {
-                if (!class_exists($id)) {
+                if (!class_exists($id) && !interface_exists($id)) {
                     $message = "Container definition id conflict: id '$id' exists "
                         . "in modules '$namespace' and '{$this->definitionsDefault[$id]}'";
 
@@ -216,6 +216,11 @@ class RootContainer
                 $parentDefinitions = $this->buildDefinitions($dependencyNamespace, $definitions);
 
                 $definitionParts[] = $this->getDependencyDefinitions($dependencyNamespace, $parentDefinitions);
+                foreach ($parentDefinitions[self::KEY_SUBMODULE_NAMES] as $parentSubmodule) {
+                    if (strpos($parentSubmodule, $dependencyNamespace) !== 0) {
+                        $definitionParts[0][self::KEY_SUBMODULE_NAMES][] = $parentSubmodule;
+                    }
+                }
             } else {
                 // 3rd-party dependency
                 $dependencyDefinitions = $this->buildDefinitions($dependencyNamespace, $definitions);
