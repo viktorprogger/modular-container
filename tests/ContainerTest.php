@@ -6,12 +6,16 @@ namespace Viktorprogger\Container\Test;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
+use Viktorprogger\Container\NofFoundException;
 use Viktorprogger\Container\RootContainer;
 use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule1\DependencyConfigured;
 use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule1\DependencyConfiguredInDependentModule;
 use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule1\SubmoduleWithoutDependencies;
 use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule1\SubSubmodule\DependencyConfiguredParent;
 use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule1\SubSubmodule\DependencyRedefined;
+use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule2\DependencyNotConfigured;
+use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule2\NeighbourDependency;
+use Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule2\ParentDependency;
 use Viktorprogger\Container\Test\Stub\ModuleRoot1\TopLevelWithoutDependencies;
 use Viktorprogger\Container\Test\Stub\ModuleRoot3\Module3InterfaceImpl1;
 use Viktorprogger\Container\Test\Stub\ModuleRoot3\Module3InterfaceImpl2;
@@ -49,5 +53,26 @@ class ContainerTest extends TestCase
         if ($assert !== null) {
             $assert($object);
         }
+    }
+
+    public function failureProvider(): array
+    {
+        return [
+            'DependencyNotConfigured' => [DependencyNotConfigured::class],
+            'NeighbourDependency' => [NeighbourDependency::class],
+            'ParentDependency' => [ParentDependency::class],
+        ];
+    }
+
+    /**
+     * @param string $className
+     * @dataProvider failureProvider
+     */
+    public function testFailure(string $className): void
+    {
+        $this->expectException(NofFoundException::class);
+
+        $container = new RootContainer(require __DIR__ . '/config.php');
+        $container->get($className);
     }
 }
