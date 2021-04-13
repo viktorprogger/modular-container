@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Psr\Container\ContainerInterface;
+use Viktorprogger\Container\NofFoundException;
 
 class ContainerRouter implements ContainerInterface
 {
