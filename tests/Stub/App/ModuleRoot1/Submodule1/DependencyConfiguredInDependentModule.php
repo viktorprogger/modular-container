@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Viktorprogger\Container\Test\Stub\ModuleRoot1\Submodule1;
+namespace Viktorprogger\Container\Test\Stub\App\ModuleRoot1\Submodule1;
 
-use Viktorprogger\Container\Test\Stub\ModuleRoot3\Module3Interface;
+use Viktorprogger\Container\Test\Stub\App\ModuleRoot3\Module3Interface;
 
 class DependencyConfiguredInDependentModule
 {

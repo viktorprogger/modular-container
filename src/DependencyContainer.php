@@ -5,51 +5,50 @@ namespace Viktorprogger\Container;
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 use Yiisoft\Factory\Definition\Normalizer;
+use Yiisoft\Factory\DependencyResolverInterface;
 
-final class ModuleContainer implements ContainerInterface
+/**
+ * @internal
+ */
+final class DependencyContainer implements ContainerInterface
 {
-    private array $building = [];
+    private array $building;
     private array $resolved = [];
-    private DependencyResolver $dependencyResolver;
+    private DependencyResolverInterface $dependencyResolver;
 
     public function __construct(
-        private string $id,
         private array $definitions,
-        private ContainerConfiguration $configuration,
+        private ContainerInterface $parent,
     ) {
         $this->dependencyResolver = new DependencyResolver($this);
     }
 
     public function get(string $id): object
     {
-        if ($id === ContainerInterface::class) {
-            return $this;
-        }
-
         if (isset($this->resolved[$id])) {
             return $this->resolved[$id];
         }
 
-        $container = $this->configuration->getContainer($id, $this->id);
-        if ($container === $this) {
+        if (isset($this->definitions[$id])) {
             return $this->build($id);
         }
 
-        return $container->get($id);
+        return $this->parent->get($id);
     }
 
     public function has(string $id): bool
     {
-        return $id === ContainerInterface::class
-            || isset($this->resolved[$id])
-            || isset($this->definitions[$id]);
+        return isset($this->definitions[$id]) || $this->parent->has($id);
     }
 
-    /**
-     * @param string $id
-     *
-     * @return mixed
-     */
+    public function withResolver(DependencyResolverInterface $resolver): self
+    {
+        $instance = clone $this;
+        $instance->dependencyResolver = $resolver;
+
+        return $instance;
+    }
+
     private function build(string $id): object
     {
         if (isset($this->building[$id])) {
@@ -64,8 +63,7 @@ final class ModuleContainer implements ContainerInterface
         $this->building[$id] = true;
 
         try {
-            $definition = $this->definitions[$id] ?? $id;
-            $this->resolved[$id] = Normalizer::normalize($definition)->resolve($this->dependencyResolver);
+            $this->resolved[$id] = Normalizer::normalize($this->definitions[$id])->resolve($this->dependencyResolver);
         } finally {
             unset($this->building[$id]);
         }

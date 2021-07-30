@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Viktorprogger\Container\Test\Stub\ModuleRoot2;
+namespace Viktorprogger\Container\Test\Stub\App\ModuleRoot3;
 
 class TopLevelWithoutDependencies2
 {
