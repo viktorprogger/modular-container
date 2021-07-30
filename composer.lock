@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c9995b848ef51b04203937449c77ed2d",
+    "content-hash": "5f5db2ffa86181aa1f64987e2a569ea6",
     "packages": [
         {
             "name": "psr/container",
@@ -53,88 +53,6 @@
                 "source": "https://github.com/php-fig/container/tree/1.1.1"
             },
             "time": "2021-03-05T17:36:06+00:00"
-        },
-        {
-            "name": "yiisoft/di",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/yiisoft/di.git",
-                "reference": "2cc9f803ece970bbbb5d8ccf740c3312e7580d1b"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/di/zipball/2cc9f803ece970bbbb5d8ccf740c3312e7580d1b",
-                "reference": "2cc9f803ece970bbbb5d8ccf740c3312e7580d1b",
-                "shasum": ""
-            },
-            "require": {
-                "ext-mbstring": "*",
-                "php": "^7.4|^8.0",
-                "psr/container": "^1.0",
-                "yiisoft/factory": "^3.0@dev",
-                "yiisoft/injector": "^1.0"
-            },
-            "provide": {
-                "psr/container-implementation": "1.0.0"
-            },
-            "require-dev": {
-                "league/container": "^3.3",
-                "phpbench/phpbench": "^1.0.0",
-                "phpunit/phpunit": "^9.4",
-                "roave/infection-static-analysis-plugin": "^1.6",
-                "spatie/phpunit-watcher": "^1.23",
-                "vimeo/psalm": "^4.2"
-            },
-            "suggest": {
-                "phpbench/phpbench": "To run benchmarks.",
-                "yiisoft/injector": "^1.0@dev"
-            },
-            "default-branch": true,
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "3.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Yiisoft\\Di\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "BSD-3-Clause"
-            ],
-            "description": "Yii DI container",
-            "homepage": "http://www.yiiframework.com/",
-            "keywords": [
-                "Autowiring",
-                "PSR-11",
-                "container",
-                "dependency",
-                "di",
-                "injection",
-                "injector"
-            ],
-            "support": {
-                "forum": "http://www.yiiframework.com/forum/",
-                "irc": "irc://irc.freenode.net/yii",
-                "issues": "https://github.com/yiisoft/di/issues?state=open",
-                "source": "https://github.com/yiisoft/di",
-                "wiki": "http://www.yiiframework.com/wiki/"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/yiisoft",
-                    "type": "github"
-                },
-                {
-                    "url": "https://opencollective.com/yiisoft",
-                    "type": "open_collective"
-                }
-            ],
-            "time": "2021-07-29T11:19:59+00:00"
         },
         {
             "name": "yiisoft/factory",
@@ -2744,7 +2662,6 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "yiisoft/factory": 20,
-        "yiisoft/di": 20,
         "roave/security-advisories": 20
     },
     "prefer-stable": true,

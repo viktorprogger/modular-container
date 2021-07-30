@@ -17,7 +17,7 @@ final class ContainerConfiguration
 
     public function __construct(array $definitions)
     {
-        // TODO throw an exception if vendor defined?
+        // TODO throw an exception if "vendor" module defined?
         if (!isset($definitions[self::VENDOR_CONTAINER_ID])) {
             $definitions[self::VENDOR_CONTAINER_ID] = ['namespace' => ''];
         }
@@ -27,21 +27,21 @@ final class ContainerConfiguration
         }
     }
 
-    public function getContainer(?string $id, string $moduleId): ContainerInterface
+    public function getContainer(?string $id, string $callerId): ContainerInterface
     {
         if ($id === null) {
-            return $this->getModuleContainer($moduleId, $moduleId);
+            return $this->getModuleContainer($callerId, $callerId);
         }
 
-        if (isset($this->resolved[$moduleId][$id])) {
-            return $this->resolved[$moduleId][$id];
+        if (!isset($this->resolved[$callerId][$id])) {
+            if (class_exists($id) || interface_exists($id)) {
+                $this->resolved[$callerId][$id] = $this->getContainerForClass($id, $callerId);
+            } else {
+                $this->resolved[$callerId][$id] = $this->getContainerForId($id, $callerId);
+            }
         }
 
-        if (class_exists($id) || interface_exists($id)) {
-            return $this->getContainerForClass($id, $moduleId);
-        }
-
-        return $this->getContainerForId($id, $moduleId);
+        return $this->resolved[$callerId][$id];
     }
 
     private function getModuleContainer(string $moduleId, string $callerId): ContainerInterface

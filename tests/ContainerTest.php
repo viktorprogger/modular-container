@@ -21,7 +21,7 @@ use Viktorprogger\Container\Test\Stub\App\ModuleRoot1\VendorDependent;
 use Viktorprogger\Container\Test\Stub\App\ModuleRoot3\Module3InterfaceImpl1;
 use Viktorprogger\Container\Test\Stub\App\ModuleRoot3\Module3InterfaceImpl2;
 
-class ContainerNewTest extends TestCase
+class ContainerTest extends TestCase
 {
     public function successProvider(): array
     {
