@@ -3,28 +3,15 @@
 namespace Viktorprogger\Container;
 
 use Psr\Container\ContainerInterface;
-use RuntimeException;
 
 final class ContainerConfiguration
 {
-    public const VENDOR_CONTAINER_ID = 'vendor';
-
-    private array $building = [];
+    /** @var ContainerInterface[][] */
     private array $containers = [];
-    private array $definitions = [];
-    /** @var array<string, ContainerInterface>[] */
     private array $resolved = [];
 
-    public function __construct(array $definitions)
+    public function __construct(private ModuleConfigurationCollection $modules)
     {
-        // TODO throw an exception if "vendor" module defined?
-        if (!isset($definitions[self::VENDOR_CONTAINER_ID])) {
-            $definitions[self::VENDOR_CONTAINER_ID] = ['namespace' => ''];
-        }
-
-        foreach ($definitions as $moduleId => $definition) {
-            $this->buildContainerDefinition($moduleId, $definitions);
-        }
     }
 
     public function getContainer(?string $id, string $callerId): ContainerInterface
@@ -50,15 +37,21 @@ final class ContainerConfiguration
             if ($moduleId === $callerId) {
                 $container = new ModuleContainer(
                     $moduleId,
-                    $this->definitions[$moduleId]['definitions'] ?? [],
-                    $this
+                    $this->modules->getModule($moduleId)->getDefinitions(),
+                    $this,
                 );
             } elseif (($definitions = $this->getDependencyDefinitions($callerId, $moduleId)) !== []) {
-                $parent = $this->getModuleContainer($moduleId, $this->definitions[$moduleId]['parent'] ?? $moduleId);
+                $parent = $this->getModuleContainer(
+                    $moduleId,
+                    $this->modules->getModule($moduleId)->getParent() ?? $moduleId,
+                );
                 $container = (new DependencyContainer($definitions, $parent))
                     ->withResolver(new DependencyResolver($this->getModuleContainer($callerId, $callerId)));
             } else {
-                $container = $this->getModuleContainer($moduleId, $this->definitions[$callerId]['parent'] ?? $moduleId);
+                $container = $this->getModuleContainer(
+                    $moduleId,
+                    $this->modules->getModule($callerId)->getParent() ?? $moduleId,
+                );
             }
 
             $this->containers[$moduleId][$callerId] = $container;
@@ -67,98 +60,12 @@ final class ContainerConfiguration
         return $this->containers[$moduleId][$callerId];
     }
 
-    private function buildContainerDefinition(string $moduleId, array $definitions): void
-    {
-        if (isset($this->building[$moduleId])) {
-            throw new RuntimeException('Circular module dependency');
-        }
-
-        if (isset($this->definitions[$moduleId])) {
-            return;
-        }
-
-        $this->building[$moduleId] = true;
-        $definition = $definitions[$moduleId];
-
-        if (!isset($definition['parent'])) {
-            $definition['parent'] = $this->getParent($definitions, $moduleId);
-            if ($definition['parent'] !== null) {
-                $this->buildContainerDefinition($definition['parent'], $definitions);
-            }
-        }
-
-        $definition['children'] = $this->findChildren($definitions, $moduleId);
-
-        $this->definitions[$moduleId] = $definition;
-        $this->definitions[$moduleId]['dependencies'] = array_unique(
-            array_merge(
-                   $definition['dependencies'] ?? [],
-                ['vendor'],
-                ...$this->getParentDependencies($moduleId),
-            )
-        );
-
-        unset($this->building[$moduleId]);
-    }
-
-    private function getParent(array $definitions, string $moduleIdCurrent): ?string
-    {
-        $moduleNamespace = trim($definitions[$moduleIdCurrent]['namespace'], '\\'); // TODO add existence check
-        $parentModuleId = null;
-        $parentParts = 0;
-
-        foreach ($definitions as $moduleId => $definition) {
-            $namespace = trim($definition['namespace'], '\\'); // TODO add existence check
-            $parts = explode('\\', $namespace);
-            $partsCount = count($parts);
-
-            if ($moduleId !== $moduleIdCurrent && stripos($moduleNamespace, "$namespace\\") === 0) {
-                if ($parentParts < $partsCount) {
-                    $parentModuleId = $moduleId;
-                    $parentParts = $partsCount;
-                }
-            }
-        }
-
-        return $parentModuleId;
-    }
-
-    private function findChildren(array $definitions, string $moduleId): array
-    {
-        $result = [];
-        $moduleNamespace = trim($definitions[$moduleId]['namespace'], '\\'); // TODO add existence check
-
-        foreach ($definitions as $id => $definition) {
-            $namespace = trim($definition['namespace'], '\\'); // TODO add existence check
-            if ($id !== $moduleId && stripos("$namespace\\", $moduleNamespace) === 0) {
-                $result[] = $id;
-            }
-        }
-
-        return $result;
-    }
-
-    private function getParentDependencies(string $moduleId, array $dependencies = []): array
-    {
-        $parent = $this->definitions[$moduleId]['parent'] ?? null;
-        if ($parent !== null) {
-            $parentDeps = $this->definitions[$parent]['dependencies'] ?? [];
-            if ($parentDeps !== []) {
-                $dependencies[] = $parentDeps;
-            }
-
-            $dependencies = $this->getParentDependencies($parent, $dependencies);
-        }
-
-        return $dependencies;
-    }
-
     private function getDependencyDefinitions(string $moduleId, string $dependencyId): array
     {
         $result = [];
 
-        $namespace = trim($this->definitions[$dependencyId]['namespace'], '\\') . '\\'; // TODO add existence check
-        $definitions = $this->definitions[$moduleId]['definitions'] ?? [];
+        $namespace = $this->modules->getModule($dependencyId)->getNamespace() . '\\';
+        $definitions = $this->modules->getModule($moduleId)->getDefinitions() ?? [];
         foreach ($definitions as $id => $definition) {
             if (class_exists($id) || interface_exists($id)) {
                 if (stripos(trim($id, '\\'), $namespace) === 0) {
@@ -184,21 +91,21 @@ final class ContainerConfiguration
         $moduleFound = null;
         $partsFound = 0;
 
-        foreach ($this->definitions as $module => $definition) {
-            $namespace = trim($definition['namespace'], '\\') . '\\';
+        foreach ($this->modules->getModuleList() as $module) {
+            $namespace = $module->getNamespace() . '\\';
             if (
                 stripos($classPrepared, $namespace) === 0
                 && ($parts = explode('\\', $namespace)) > $partsFound
             ) {
-                $moduleFound = $module;
+                $moduleFound = $module->getId();
                 $partsFound = $parts;
             }
         }
 
-        $moduleFound = $moduleFound ?? 'vendor';
+        $moduleFound = $moduleFound ?? $this->modules->getModule('vendor')->getId(); // TODO constant
         $submodules = array_merge(
-            $this->definitions[$moduleId]['dependencies'],
-            $this->definitions[$moduleId]['children'],
+            $this->modules->getModule($moduleId)->getDependencies(),
+            $this->modules->getModule($moduleId)->getChildren(),
             [$moduleId]
         );
 
