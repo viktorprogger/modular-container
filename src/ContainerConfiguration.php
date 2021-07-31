@@ -10,7 +10,7 @@ final class ContainerConfiguration
     private array $containers = [];
     private array $resolved = [];
 
-    public function __construct(private ModuleConfigurationCollection $modules)
+    public function __construct(private ConfigurationInterface $modules)
     {
     }
 

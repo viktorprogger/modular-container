@@ -5,7 +5,7 @@ namespace Viktorprogger\Container;
 use InvalidArgumentException;
 use RuntimeException;
 
-final class ModuleConfigurationCollection
+final class Psr4ConfigurationCollection implements ConfigurationInterface
 {
     private const VENDOR_CONTAINER_ID = 'vendor';
     private array $building = [];
