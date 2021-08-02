@@ -23,7 +23,7 @@ final class DependencyContainer implements ContainerInterface
         $this->dependencyResolver = new DependencyResolver($this);
     }
 
-    public function get(string $id): object
+    public function get(string $id)
     {
         if (isset($this->resolved[$id])) {
             return $this->resolved[$id];

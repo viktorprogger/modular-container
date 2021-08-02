@@ -31,12 +31,12 @@ final class DependencyResolver implements DependencyResolverInterface
      *
      * @psalm-suppress InvalidThrow
      */
-    public function get($id)
+    public function get(string $id)
     {
         return $this->container->get($id);
     }
 
-    public function has($id): bool
+    public function has(string $id): bool
     {
         return $this->container->has($id);
     }
