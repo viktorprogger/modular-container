@@ -2,18 +2,41 @@
 
 namespace Viktorprogger\Container;
 
+use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 
-final class ContainerConfiguration
+final class ContainerConfiguration implements ContainerInterface
 {
     /** @var ContainerInterface[][] */
     private array $containers = [];
     private array $resolved = [];
 
-    public function __construct(private ConfigurationInterface $modules)
+    public function __construct(private ConfigurationInterface $modules, private string $rootModule = 'application')
     {
+        try {
+            $this->modules->getModule($rootModule);
+        } catch(InvalidArgumentException $exception) {
+            throw new InvalidArgumentException('Root module container does not exist', previous: $exception);
+        }
     }
 
+    public function get(string $id)
+    {
+        return $this->getModuleContainer($this->rootModule, $this->rootModule)->get($id);
+    }
+
+    public function has(string $id): bool
+    {
+        return $this->getModuleContainer($this->rootModule, $this->rootModule)->has($id);
+    }
+
+    /**
+     * @param string|null $id
+     * @param string $callerId
+     *
+     * @internal
+     * @return ContainerInterface
+     */
     public function getContainer(?string $id, string $callerId): ContainerInterface
     {
         if ($id === null) {

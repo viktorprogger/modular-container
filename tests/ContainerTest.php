@@ -27,19 +27,19 @@ class ContainerTest extends TestCase
     public function successProvider(): array
     {
         return [
-            /*'TopLevelWithoutDependencies' => [TopLevelWithoutDependencies::class],
+            'TopLevelWithoutDependencies' => [TopLevelWithoutDependencies::class],
             'SubmoduleWithoutDependencies' => [SubmoduleWithoutDependencies::class],
             'DependencyConfigured' => [DependencyConfigured::class],
             'DependencyConfiguredParent' => [DependencyConfiguredParent::class],
             'DependencyConfiguredInDependentModule' => [
                 DependencyConfiguredInDependentModule::class,
                 fn(DependencyConfiguredInDependentModule $object) => self::assertInstanceOf(Module3InterfaceImpl2::class, $object->module3)
-            ],*/
+            ],
             'DependencyRedefined' => [
                 DependencyRedefined::class,
                 fn(DependencyRedefined $object) => self::assertInstanceOf(Module3InterfaceImpl1::class, $object->module3)
             ],
-//            'VendorDependent' => [VendorDependent::class],
+            'VendorDependent' => [VendorDependent::class],
         ];
     }
 
@@ -49,8 +49,7 @@ class ContainerTest extends TestCase
      */
     public function testSuccessful(string $className, ?Closure $assert = null): void
     {
-        $object = (new ContainerConfiguration(new Psr4ConfigurationCollection(require __DIR__ . '/config.php')))
-            ->getContainer(null, 'test')
+        $object = (new ContainerConfiguration(new Psr4ConfigurationCollection(require __DIR__ . '/config.php'), 'test'))
             ->get($className);
 
         self::assertInstanceOf($className, $object);
@@ -76,8 +75,7 @@ class ContainerTest extends TestCase
     {
         $this->expectException(NotFoundException::class);
 
-        (new ContainerConfiguration(new Psr4ConfigurationCollection(require __DIR__ . '/config.php')))
-            ->getContainer(null, 'test')
+        (new ContainerConfiguration(new Psr4ConfigurationCollection(require __DIR__ . '/config.php'), 'test'))
             ->get($className);
     }
 }
