@@ -2,7 +2,6 @@
 
 namespace Viktorprogger\Container;
 
-use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
 
 final class ContainerConfiguration
@@ -37,6 +36,31 @@ final class ContainerConfiguration
         }
 
         return $this->resolved[$callerId][$id];
+    }
+
+    /**
+     * Resets all containers marked as resetable and their dependants
+     *
+     * @see ModuleConfiguration::isResetable()
+     */
+    public function reset(): void
+    {
+        $toReset = [];
+        $modules = array_map(
+            static fn(ModuleConfiguration $module) => $module->getId(),
+            array_filter(
+                $this->modules->getModuleList(),
+                static fn(ModuleConfiguration $module) => $module->isResetable()
+            )
+        );
+
+        foreach ($modules as $moduleId) {
+            $this->getModulesToReset($moduleId, $toReset);
+        }
+
+        foreach ($toReset as $moduleId) {
+            unset($this->containers[$moduleId]);
+        }
     }
 
     private function getModuleContainer(string $moduleId, string $callerId): ContainerInterface
@@ -137,5 +161,20 @@ final class ContainerConfiguration
         }
 
         throw new NotFoundException($id);
+    }
+
+    private function getModulesToReset(string $moduleId, array &$toReset = []): void
+    {
+        if (isset($this->containers[$moduleId])) {
+            foreach (array_keys($this->containers[$moduleId]) as $dependant) {
+                if (!isset($toReset[$dependant])) {
+                    if ($dependant === $moduleId) {
+                        $toReset[$dependant] = true;
+                    } else {
+                        $this->getModulesToReset($dependant, $toReset);
+                    }
+                }
+            }
+        }
     }
 }

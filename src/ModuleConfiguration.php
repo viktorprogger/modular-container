@@ -21,6 +21,7 @@ final class ModuleConfiguration
         private array $dependencies = [],
         private ?string $parent = null,
         private array $children = [],
+        private bool $resetable = false,
     ) {
         $this->namespace = trim($this->namespace);
         $this->namespace = trim($this->namespace, '\\');
@@ -61,6 +62,11 @@ final class ModuleConfiguration
     public function getNamespace(): string
     {
         return $this->namespace;
+    }
+
+    public function isResetable(): bool
+    {
+        return $this->resetable;
     }
 
     public function setParent(?string $parent): void
