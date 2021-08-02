@@ -9,6 +9,7 @@ use PHPUnit\Framework\TestCase;
 use Viktorprogger\Container\ContainerConfiguration;
 use Viktorprogger\Container\Psr4ConfigurationCollection;
 use Viktorprogger\Container\NotFoundException;
+use Viktorprogger\Container\RootContainer;
 use Viktorprogger\Container\Test\Stub\App\ModuleRoot1\Submodule1\DependencyConfigured;
 use Viktorprogger\Container\Test\Stub\App\ModuleRoot1\Submodule1\DependencyConfiguredInDependentModule;
 use Viktorprogger\Container\Test\Stub\App\ModuleRoot1\Submodule1\SubmoduleWithoutDependencies;
@@ -49,8 +50,7 @@ class ContainerTest extends TestCase
      */
     public function testSuccessful(string $className, ?Closure $assert = null): void
     {
-        $object = (new ContainerConfiguration(new Psr4ConfigurationCollection(require __DIR__ . '/config.php'), 'test'))
-            ->get($className);
+        $object = $this->getContainer()->get($className);
 
         self::assertInstanceOf($className, $object);
         if ($assert !== null) {
@@ -75,7 +75,16 @@ class ContainerTest extends TestCase
     {
         $this->expectException(NotFoundException::class);
 
-        (new ContainerConfiguration(new Psr4ConfigurationCollection(require __DIR__ . '/config.php'), 'test'))
-            ->get($className);
+        $this->getContainer()->get($className);
+    }
+
+    private function getContainer(): RootContainer
+    {
+        return new RootContainer(
+            new ContainerConfiguration(
+                new Psr4ConfigurationCollection(require __DIR__ . '/config.php')
+            ),
+            'test'
+        );
     }
 }
