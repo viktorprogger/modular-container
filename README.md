@@ -18,6 +18,8 @@ You can also define other keys in a module configuration:
 - `dependencies` - Other module IDs.
 - `parent` - you can manually define module's parent, it should be parent's module id. If not defined, it will be computed automatically based on PSR-4.
 - `children` - you can manually define module's children modules, this parameter must be an array of module IDs. Anyway, modules will be computed automatically.
+- `reset` - boolean value. `True` indicates this module can't work with long-running applications
+(RoadRunner, Swoole, etc.), e.g. has stateful services, and should be reset between requests.
 
 ## Ограничения
 
