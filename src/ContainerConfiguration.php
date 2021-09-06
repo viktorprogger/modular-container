@@ -127,7 +127,7 @@ final class ContainerConfiguration
             $namespace = $module->getNamespace() . '\\';
             if (
                 stripos($classPrepared, $namespace) === 0
-                && ($parts = explode('\\', $namespace)) > $partsFound
+                && ($parts = count(explode('\\', $namespace))) > $partsFound
             ) {
                 $moduleFound = $module->getId();
                 $partsFound = $parts;

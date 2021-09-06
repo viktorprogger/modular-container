@@ -13,6 +13,7 @@ final class ModuleConfiguration
      * @param list<string> $dependencies Module dependencies (other module ids)
      * @param string|null $parent
      * @param list<string> $children
+     * @param bool $resetable
      */
     public function __construct(
         private string $id,

@@ -7,18 +7,21 @@ namespace Viktorprogger\Container;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Yiisoft\Factory\DependencyResolverInterface;
+use Yiisoft\Definitions\Contract\DependencyResolverInterface;
+use Yiisoft\Injector\Injector;
 
 /**
  * @internal
  */
 final class DependencyResolver implements DependencyResolverInterface
 {
+    private Injector $injector;
     private ContainerInterface $container;
 
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
+        $this->injector = new Injector($this);
     }
 
     /**
@@ -41,23 +44,13 @@ final class DependencyResolver implements DependencyResolverInterface
         return $this->container->has($id);
     }
 
-    /**
-     * @param string $id
-     *
-     * @throws NotFoundExceptionInterface
-     * @throws ContainerExceptionInterface
-     *
-     * @return mixed|object
-     *
-     * @psalm-suppress InvalidThrow
-     */
-    public function resolve(string $id)
+    public function resolveReference(string $id)
     {
         return $this->get($id);
     }
 
-    public function shouldCloneOnResolve(): bool
+    public function invoke(callable $callable): bool
     {
-        return false;
+        return $this->injector->invoke($callable);
     }
 }

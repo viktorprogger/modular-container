@@ -4,8 +4,8 @@ namespace Viktorprogger\Container;
 
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
-use Yiisoft\Factory\Definition\Normalizer;
-use Yiisoft\Factory\DependencyResolverInterface;
+use Yiisoft\Definitions\Contract\DependencyResolverInterface;
+use Yiisoft\Definitions\Infrastructure\Normalizer;
 
 /**
  * @internal

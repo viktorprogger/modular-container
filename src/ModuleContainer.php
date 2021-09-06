@@ -4,7 +4,7 @@ namespace Viktorprogger\Container;
 
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
-use Yiisoft\Factory\Definition\Normalizer;
+use Yiisoft\Definitions\Infrastructure\Normalizer;
 
 final class ModuleContainer implements ContainerInterface
 {
