@@ -4,8 +4,11 @@ namespace Viktorprogger\Container;
 
 use InvalidArgumentException;
 
+// TODO make it immutable: create a DTO for this class configuration, which can be mutable, while this class should be immutable
 final class ModuleConfiguration
 {
+    private string $namespace;
+
     /**
      * @param string $id Module id
      * @param string $namespace Module root namespace
@@ -17,15 +20,14 @@ final class ModuleConfiguration
      */
     public function __construct(
         private string $id,
-        private string $namespace,
+        string $namespace,
         private array $definitions = [],
         private array $dependencies = [],
         private ?string $parent = null,
         private array $children = [],
         private bool $resetable = false,
     ) {
-        $this->namespace = trim($this->namespace);
-        $this->namespace = trim($this->namespace, '\\');
+        $this->namespace = trim(trim($namespace), '\\');
     }
 
     public static function fromArray(array $configuration): self

@@ -78,7 +78,7 @@ final class ContainerConfiguration
                     $this->modules->getModule($moduleId)->getParent() ?? $moduleId,
                 );
                 $container = (new DependencyContainer($definitions, $parent))
-                    ->withResolver(new DependencyResolver($this->getModuleContainer($callerId, $callerId)));
+                    ->withResolver($this->getModuleContainer($callerId, $callerId));
             } else {
                 $container = $this->getModuleContainer(
                     $moduleId,

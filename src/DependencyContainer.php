@@ -3,9 +3,8 @@
 namespace Viktorprogger\Container;
 
 use InvalidArgumentException;
+use Yiisoft\Definitions\Helpers\Normalizer;
 use Psr\Container\ContainerInterface;
-use Yiisoft\Definitions\Contract\DependencyResolverInterface;
-use Yiisoft\Definitions\Infrastructure\Normalizer;
 
 /**
  * @internal
@@ -14,13 +13,13 @@ final class DependencyContainer implements ContainerInterface
 {
     private array $building;
     private array $resolved = [];
-    private DependencyResolverInterface $dependencyResolver;
+    private ContainerInterface $dependencyResolver;
 
     public function __construct(
         private array $definitions,
         private ContainerInterface $parent,
     ) {
-        $this->dependencyResolver = new DependencyResolver($this);
+        $this->dependencyResolver = $this;
     }
 
     public function get(string $id)
@@ -41,7 +40,7 @@ final class DependencyContainer implements ContainerInterface
         return isset($this->definitions[$id]) || $this->parent->has($id);
     }
 
-    public function withResolver(DependencyResolverInterface $resolver): self
+    public function withResolver(ContainerInterface $resolver): self
     {
         $instance = clone $this;
         $instance->dependencyResolver = $resolver;

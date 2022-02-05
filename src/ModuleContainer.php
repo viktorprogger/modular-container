@@ -4,20 +4,18 @@ namespace Viktorprogger\Container;
 
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
-use Yiisoft\Definitions\Infrastructure\Normalizer;
+use Yiisoft\Definitions\Helpers\Normalizer;
 
 final class ModuleContainer implements ContainerInterface
 {
     private array $building = [];
     private array $resolved = [];
-    private DependencyResolver $dependencyResolver;
 
     public function __construct(
         private string $id,
         private array $definitions,
         private ContainerConfiguration $configuration,
     ) {
-        $this->dependencyResolver = new DependencyResolver($this);
     }
 
     public function get(string $id): object
@@ -65,7 +63,7 @@ final class ModuleContainer implements ContainerInterface
 
         try {
             $definition = $this->definitions[$id] ?? $id;
-            $this->resolved[$id] = Normalizer::normalize($definition)->resolve($this->dependencyResolver);
+            $this->resolved[$id] = Normalizer::normalize($definition)->resolve($this);
         } finally {
             unset($this->building[$id]);
         }
