@@ -1,8 +1,11 @@
 <?php
 
-namespace Viktorprogger\Container;
+namespace Viktorprogger\Container\Configuration;
 
 use Psr\Container\ContainerInterface;
+use Viktorprogger\Container\DependencyContainer;
+use Viktorprogger\Container\ModuleContainer;
+use Viktorprogger\Container\NotFoundException;
 
 final class ContainerConfiguration
 {

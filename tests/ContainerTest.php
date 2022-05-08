@@ -6,9 +6,9 @@ namespace Viktorprogger\Container\Test;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
-use Viktorprogger\Container\ContainerConfiguration;
-use Viktorprogger\Container\Psr4ConfigurationCollection;
+use Viktorprogger\Container\Configuration\ContainerConfiguration;
 use Viktorprogger\Container\NotFoundException;
+use Viktorprogger\Container\Psr4ConfigurationCollection;
 use Viktorprogger\Container\RootContainer;
 use Viktorprogger\Container\Test\Stub\App\ModuleRoot1\Submodule1\DependencyConfigured;
 use Viktorprogger\Container\Test\Stub\App\ModuleRoot1\Submodule1\DependencyConfiguredInDependentModule;

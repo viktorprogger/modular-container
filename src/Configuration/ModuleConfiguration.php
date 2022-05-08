@@ -1,6 +1,6 @@
 <?php
 
-namespace Viktorprogger\Container;
+namespace Viktorprogger\Container\Configuration;
 
 use InvalidArgumentException;
 

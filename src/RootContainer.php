@@ -4,6 +4,7 @@ namespace Viktorprogger\Container;
 
 use InvalidArgumentException;
 use Psr\Container\ContainerInterface;
+use Viktorprogger\Container\Configuration\ContainerConfiguration;
 
 final class RootContainer implements ContainerInterface
 {

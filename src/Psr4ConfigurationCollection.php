@@ -4,6 +4,8 @@ namespace Viktorprogger\Container;
 
 use InvalidArgumentException;
 use RuntimeException;
+use Viktorprogger\Container\Configuration\ConfigurationInterface;
+use Viktorprogger\Container\Configuration\ModuleConfiguration;
 
 final class Psr4ConfigurationCollection implements ConfigurationInterface
 {
